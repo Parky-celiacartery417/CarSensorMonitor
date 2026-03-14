@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         "TO",   # Toyota
         "HO",   # Honda
         "NI",   # Nissan
-        "MA",   # Mazda
+        "MZ",   # Mazda
         "SB",   # Subaru
         "SZ",   # Suzuki
         "DA",   # Daihatsu
