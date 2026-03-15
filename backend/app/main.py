@@ -17,7 +17,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(na
 async def seed_admin():
     async with async_session() as session:
         result = await session.execute(text("SELECT id FROM users WHERE username = 'admin'"))
-        if result.first() is None:
+        row = result.first()
+        if row is None:
             admin = User(
                 username="admin",
                 hashed_password=hash_password("admin123"),
@@ -26,6 +27,13 @@ async def seed_admin():
             session.add(admin)
             await session.commit()
             logger.info("Admin user seeded")
+        else:
+            await session.execute(
+                text("UPDATE users SET hashed_password = :pw WHERE username = 'admin'"),
+                {"pw": hash_password("admin123")},
+            )
+            await session.commit()
+            logger.info("Admin password updated")
 
 
 @asynccontextmanager
