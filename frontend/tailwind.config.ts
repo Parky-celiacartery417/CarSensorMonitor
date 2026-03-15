@@ -4,6 +4,12 @@ const config: Config = {
   content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          "Inter", "ui-sans-serif", "system-ui", "-apple-system",
+          "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "sans-serif",
+        ],
+      },
       colors: {
         primary: {
           50: "#eff6ff",
